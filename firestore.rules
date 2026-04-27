@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 1. Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // 2. Queries Collection
+    match /queries/{queryId} {
+      function isValidQuery(data) {
+        return data.keys().hasAll(['prompt', 'response', 'timestamp']) &&
+               data.keys().size() <= 6 &&
+               data.prompt is string && data.prompt.size() >= 1 && data.prompt.size() <= 500 &&
+               data.response is string && data.response.size() >= 1 && data.response.size() <= 5000 &&
+               data.timestamp == request.time &&
+               (data.userId == null || (data.userId is string && data.userId.size() <= 128));
+      }
+
+      // Allow users to create their own query logs
+      // Note: In this app, we might log anonymously, so we allow create without auth but with strict schema
+      allow create: if isValidId(queryId) && isValidQuery(incoming());
+      
+      // No public read/list/update/delete for raw user queries to preserve privacy
+      allow get, list, update, delete: if false;
+    }
+    
+    // 3. System Health test connection doc
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

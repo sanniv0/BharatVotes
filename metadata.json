@@ -1,0 +1,6 @@
+{
+  "name": "Bharat Votes: Indian Election Guide",
+  "description": "An interactive assistant to help Indian citizens navigate the voter registration process, EPIC card details, and polling location discovery via the Election Commission of India.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

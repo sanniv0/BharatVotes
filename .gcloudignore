@@ -1,0 +1,9 @@
+.git
+node_modules
+dist
+.env
+.env.local
+.env.*.local
+.env.production
+# Be careful NOT to list firebase-applet-config.json here 
+# if you want it to be uploaded to Cloud Build.

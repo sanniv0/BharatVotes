@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "queries": {
+      "title": "User Queries",
+      "description": "Logged interactions with Bharat Votes assistant for analytics and improvement.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the user (if authenticated) or session ID."
+        },
+        "prompt": {
+          "type": "string",
+          "description": "The user's question."
+        },
+        "response": {
+          "type": "string",
+          "description": "The assistant's response."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the query was made."
+        }
+      },
+      "required": [
+        "prompt",
+        "response",
+        "timestamp"
+      ]
+    }
+  },
+  "firestore": {
+    "/queries/{queryId}": {
+      "schema": "queries",
+      "description": "Collection of anonymous helper queries for service improvement."
+    }
+  }
+}

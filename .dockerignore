@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+.env
+.env.local
+.env.*.local
+
+# Diagnostic Scripts
+scratch/
+
+# IDE & Cache
+.vscode/
+.idea/
+.vite/
+.git/
