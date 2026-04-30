@@ -6,7 +6,7 @@ interface HeaderProps {
   setActiveTab: (tab: 'education' | 'assistant') => void;
 }
 
-export function Header({ activeTab, setActiveTab }: HeaderProps) {
+export const Header = React.memo(function Header({ activeTab, setActiveTab }: HeaderProps) {
   return (
     <header className="px-6 md:px-12 pt-8 md:pt-12 pb-8 flex flex-col md:flex-row justify-between items-start gap-8 max-w-7xl mx-auto w-full">
       <div className="max-w-xl">
@@ -46,4 +46,4 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
       </div>
     </header>
   );
-}
+});

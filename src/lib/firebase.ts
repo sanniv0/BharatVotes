@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getAnalytics, logEvent, isSupported } from 'firebase/analytics';
 import { getEnv } from './env';
 
 const firebaseConfig = {
@@ -15,8 +16,18 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 // MUST use firestoreDatabaseId from the config
-export const db = getFirestore(app, getEnv('VITE_FIREBASE_FIRESTORE_DATABASE_ID'));
+const firestoreDbId = getEnv('VITE_FIREBASE_FIRESTORE_DATABASE_ID');
+export const db = firestoreDbId && firestoreDbId !== '(default)' 
+  ? getFirestore(app, firestoreDbId) 
+  : getFirestore(app);
 export const auth = getAuth(app);
+export let analytics: ReturnType<typeof getAnalytics> | null = null;
+
+isSupported().then((supported) => {
+  if (supported) {
+    analytics = getAnalytics(app);
+  }
+});
 
 // Connectivity check
 async function testConnection() {
@@ -24,7 +35,7 @@ async function testConnection() {
     await getDocFromServer(doc(db, 'test', 'connection'));
     console.log("Firebase connection established.");
   } catch (error) {
-    if(error instanceof Error && error.message.includes('the client is offline')) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
       console.error("Please check your Firebase configuration or network.");
     }
   }
@@ -41,5 +52,20 @@ export async function logQuery(prompt: string, response: string, userId?: string
     });
   } catch (error) {
     console.error("Failed to log query to Firestore:", error);
+  }
+}
+
+/**
+ * Logs a custom event to Firebase Analytics if supported and initialized.
+ * @param eventName The name of the event
+ * @param eventParams Optional event parameters
+ */
+export function logUserEvent(eventName: string, eventParams?: Record<string, any>) {
+  if (analytics) {
+    try {
+      logEvent(analytics, eventName, eventParams);
+    } catch (error) {
+      console.error("Failed to log user event:", error);
+    }
   }
 }

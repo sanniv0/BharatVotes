@@ -124,6 +124,7 @@ export function ChatTerminal({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about EPIC card, Form 6, or Polling Booths..."
+              aria-label="Election query input"
               className="w-full bg-transparent py-4 text-sm font-medium outline-none placeholder:text-gray-400"
             />
           </div>

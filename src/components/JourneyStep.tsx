@@ -7,7 +7,7 @@ interface JourneyStepProps {
   index: number;
 }
 
-export function JourneyStep({ step, index }: JourneyStepProps) {
+export const JourneyStep = React.memo(function JourneyStep({ step, index }: JourneyStepProps) {
   return (
     <div 
       className="border-l-2 border-brand-ink pl-8 pr-4 py-4 group transition-all duration-300 hover:bg-gray-50/50"
@@ -39,4 +39,4 @@ export function JourneyStep({ step, index }: JourneyStepProps) {
       </div>
     </div>
   );
-}
+});

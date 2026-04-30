@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
@@ -5,7 +6,7 @@ import fs from "fs";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   // API routes
   app.get("/api/health", (req, res) => {
@@ -18,7 +19,7 @@ async function startServer() {
       server: { 
         middlewareMode: true,
         host: '0.0.0.0',
-        port: 3000,
+        port: PORT,
         hmr: false // Consistent with AI Studio environment
       },
       appType: "spa",

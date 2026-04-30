@@ -7,7 +7,6 @@
 - **Democratic Journey**: A step-by-step educational guide from registration to casting a vote.
 - **AI Logistics Bot**: A non-partisan assistant powered by **Gemini 2.0 Flash** providing real-time answers about Form 6, EPIC cards, and polling booths.
 - **Direct Portal Integration**: Verified links to NVSP, Electoral Search, and ECI resources.
-- **Indian Flag Palette**: A professional design system utilizing saffron-red and ink-black aesthetics.
 
 ## 🛠️ Technology Stack
 
@@ -39,11 +38,11 @@
    ```
 
 2. **Environment Variables**:
-   Create a `.env` file from the example:
+   Create a `.env` file from the example. This is the **only** file you need to edit to configure the application:
    ```bash
    cp .env.example .env
    ```
-   Add your `GEMINI_API_KEY`.
+   Fill in your `VITE_GEMINI_API_KEY` and Firebase credentials in the `.env` file.
 
 3. **Run Development Server**:
    ```bash
@@ -59,5 +58,3 @@
 
 This application addresses the challenge of making electoral information accessible to 900M+ voters. By combining educational storytelling with a conversational AI, it bridge the gap between complex official procedures and citizen needs.
 
----
-*Developed for Prompt Wars: Virtual Submission*

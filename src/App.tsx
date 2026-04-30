@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Vote,
@@ -13,10 +13,11 @@ import {
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { JourneyStep } from './components/JourneyStep';
-import { ChatTerminal } from './components/ChatTerminal';
 import { Footer } from './components/Footer';
+
+const ChatTerminal = lazy(() => import('./components/ChatTerminal').then(m => ({ default: m.ChatTerminal })));
 import { askCivicGuide } from './services/geminiService';
-import { logQuery } from './lib/firebase';
+import { logQuery, logUserEvent } from './lib/firebase';
 import { Message, ElectionStep } from './types';
 
 const ELECTION_STEPS: ElectionStep[] = [
@@ -62,6 +63,10 @@ const ELECTION_STEPS: ElectionStep[] = [
   }
 ];
 
+/**
+ * Main Application Component for Bharat Votes
+ * Handles state for the active tab, chatbot messages, and interactive civic guide.
+ */
 export default function App() {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', content: "Namaste! I'm Bharat Votes. I can help you with registration (Form 6), finding your polling station, or understanding the EVM/VVPAT process in India. How can I assist you today?" }
@@ -70,7 +75,12 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'education' | 'assistant'>('education');
 
-  const handleSend = async () => {
+  const handleTabChange = useCallback((tab: 'education' | 'assistant') => {
+    setActiveTab(tab);
+    logUserEvent('tab_switched', { tab_name: tab });
+  }, []);
+
+  const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
@@ -98,12 +108,13 @@ export default function App() {
 
     if (response) {
       logQuery(userMessage, response);
+      logUserEvent('chat_message_sent', { message_length: userMessage.length });
     }
-  };
+  }, [input, isLoading, messages]);
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-ink font-sans selection:bg-brand-accent selection:text-white">
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Header activeTab={activeTab} setActiveTab={handleTabChange} />
 
       <main className="max-w-7xl mx-auto px-6 md:px-12 py-8 min-h-[60vh]">
         <AnimatePresence mode="wait">
@@ -125,7 +136,7 @@ export default function App() {
 
                 {/* Interactive Assistant Bar */}
                 <div
-                  onClick={() => setActiveTab('assistant')}
+                  onClick={() => handleTabChange('assistant')}
                   className="bg-brand-ink text-white p-10 rounded-tr-[100px] flex flex-col md:flex-row items-center justify-between mt-12 cursor-pointer group hover:bg-gray-900 transition-colors"
                 >
                   <div className="mb-6 md:mb-0">
@@ -187,14 +198,16 @@ export default function App() {
               </aside>
             </motion.div>
           ) : (
-            <ChatTerminal
-              messages={messages}
-              input={input}
-              setInput={setInput}
-              isLoading={isLoading}
-              onSend={handleSend}
-              onExit={() => setActiveTab('education')}
-            />
+            <Suspense fallback={<div className="flex justify-center items-center h-64 text-brand-ink/50">Loading Bharat Bot...</div>}>
+              <ChatTerminal
+                messages={messages}
+                input={input}
+                setInput={setInput}
+                isLoading={isLoading}
+                onSend={handleSend}
+                onExit={() => handleTabChange('education')}
+              />
+            </Suspense>
           )}
         </AnimatePresence>
       </main>
