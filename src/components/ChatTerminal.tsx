@@ -1,43 +1,61 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { MessageSquare, Send } from 'lucide-react';
+import { MessageSquare, Send, AlertCircle } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { cn } from '../lib/utils';
 import { Message } from '../types';
+import { CHAT_SUGGESTIONS } from '../constants';
 
 interface ChatTerminalProps {
+  /** List of chat messages */
   messages: Message[];
+  /** Current input text */
   input: string;
+  /** Function to update input text */
   setInput: (value: string) => void;
+  /** Loading state of the assistant */
   isLoading: boolean;
+  /** Callback for sending a message */
   onSend: () => void;
+  /** Callback for exiting the terminal */
   onExit: () => void;
+  /** Optional error message to display */
+  error?: string | null;
 }
 
+/**
+ * ChatTerminal Component
+ * Provides an interactive terminal interface for the Bharat Bot assistant.
+ */
 export function ChatTerminal({ 
   messages, 
   input, 
   setInput, 
   isLoading, 
   onSend, 
-  onExit 
+  onExit,
+  error
 }: ChatTerminalProps) {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Scrolls the chat area to the bottom.
+   */
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, error]);
 
+  /**
+   * Handles form submission.
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSend();
   };
-
-  const suggestions = ["New Voter Form 6", "NRI Voter Info", "Download e-EPIC", "Check Voter List"];
 
   return (
     <motion.div
@@ -61,17 +79,17 @@ export function ChatTerminal({
         </div>
         <button 
           onClick={onExit}
-          className="text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 hover:bg-gray-50 rounded-full transition-colors border border-gray-100"
+          className="text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 hover:bg-gray-50 rounded-full transition-colors border border-gray-100 focus:ring-2 focus:ring-brand-ink focus:outline-none"
         >
           Exit Terminal
         </button>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-10 space-y-10 bg-[radial-gradient(#f0f0f0_1px,transparent_1px)] [background-size:20px_20px]">
+      <div className="flex-1 overflow-y-auto p-10 space-y-10 bg-[radial-gradient(#f0f0f0_1px,transparent_1px)] [background-size:20px_20px]" role="log" aria-live="polite">
         {messages.map((m, i) => (
           <motion.div
-            key={i}
+            key={`${i}-${m.role}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
@@ -98,6 +116,20 @@ export function ChatTerminal({
             </span>
           </motion.div>
         ))}
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex mr-auto items-start flex-col gap-2"
+          >
+            <div className="bg-red-50 text-red-600 px-6 py-4 rounded-3xl rounded-tl-none border border-red-100 flex items-center gap-3 shadow-sm">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+          </motion.div>
+        )}
+
         {isLoading && (
           <div className="flex mr-auto items-start flex-col gap-2">
             <div className="bg-gray-100 px-6 py-3 rounded-3xl rounded-tl-none flex gap-1.5 items-center shadow-sm">
@@ -131,17 +163,17 @@ export function ChatTerminal({
           <button 
             disabled={!input.trim() || isLoading}
             aria-label="Send message"
-            className="w-16 h-16 bg-brand-accent text-white rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100 transition-all shadow-xl shadow-brand-accent/20 grow-0 shrink-0"
+            className="w-16 h-16 bg-brand-accent text-white rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100 transition-all shadow-xl shadow-brand-accent/20 grow-0 shrink-0 focus:ring-4 focus:ring-brand-accent/30 focus:outline-none"
           >
             <Send className="w-6 h-6" />
           </button>
         </form>
         <div className="mt-4 flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-          {suggestions.map(suggestion => (
+          {CHAT_SUGGESTIONS.map(suggestion => (
             <button
               key={suggestion}
               onClick={() => setInput(suggestion)}
-              className="whitespace-nowrap px-4 py-2 border border-gray-100 bg-gray-50/50 rounded-lg text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-brand-ink hover:border-gray-300 transition-all"
+              className="whitespace-nowrap px-4 py-2 border border-gray-100 bg-gray-50/50 rounded-lg text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-brand-ink hover:border-gray-300 transition-all focus:ring-2 focus:ring-brand-ink focus:outline-none"
             >
               {suggestion}
             </button>

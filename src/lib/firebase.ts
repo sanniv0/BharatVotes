@@ -29,19 +29,12 @@ isSupported().then((supported) => {
   }
 });
 
-// Connectivity check
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-    console.log("Firebase connection established.");
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration or network.");
-    }
-  }
-}
-testConnection();
-
+/**
+ * Logs a query and its response to Firestore for analytics and improvement.
+ * @param prompt User's input prompt
+ * @param response Assistant's response
+ * @param userId Optional user ID
+ */
 export async function logQuery(prompt: string, response: string, userId?: string) {
   try {
     await addDoc(collection(db, 'queries'), {

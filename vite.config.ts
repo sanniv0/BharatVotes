@@ -15,6 +15,19 @@ export default defineConfig(({ mode }) => {
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/analytics'],
+            'vendor-utils': ['lucide-react', 'motion', 'react-markdown'],
+            'vendor-ai': ['@google/genai']
+          }
+        }
+      },
+      chunkSizeWarningLimit: 1000,
+    },
     test: {
       globals: true,
       environment: 'jsdom',

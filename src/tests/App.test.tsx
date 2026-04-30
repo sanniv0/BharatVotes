@@ -2,12 +2,10 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import App from '../App';
+import { askCivicGuide } from '../services/geminiService';
 
 vi.mock('../services/geminiService', () => ({
-  askCivicGuide: vi.fn(async (m, h, cb) => {
-    cb('Mock response');
-    return 'Mock response';
-  })
+  askCivicGuide: vi.fn()
 }));
 
 vi.mock('../lib/firebase', () => ({
@@ -25,6 +23,14 @@ vi.mock('motion/react', () => ({
 }));
 
 describe('App', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (askCivicGuide as any).mockImplementation(async (m: any, h: any, cb: any) => {
+      cb('Mock response');
+      return 'Mock response';
+    });
+  });
+
   it('renders and switches tabs', async () => {
     render(<App />);
     fireEvent.click(screen.getByText('Ask Bharat Bot'));
@@ -46,6 +52,25 @@ describe('App', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Mock response')).toBeInTheDocument();
+    });
+  });
+
+  it('handles API errors gracefully', async () => {
+    (askCivicGuide as any).mockImplementationOnce(async () => {
+      throw new Error('API Failure');
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByText('Ask Bharat Bot'));
+    
+    await waitFor(() => {
+      const input = screen.getByPlaceholderText(/Ask about EPIC card/i);
+      fireEvent.change(input, { target: { value: 'test error' } });
+      fireEvent.click(screen.getByLabelText('Send message'));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Unable to reach the assistant/i)).toBeInTheDocument();
     });
   });
 });
